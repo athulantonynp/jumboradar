@@ -3,4 +3,5 @@
     <string name="btn_text_report_sighting">Report Sighting</string>
     <string name="btn_text_history">History</string>
     <string name="title_activity_history">History</string>
+    <string name="subscribe_to_update">Subscribe to update</string>
 </resources>

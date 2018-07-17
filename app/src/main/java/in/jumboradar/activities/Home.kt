@@ -1,76 +1,81 @@
 package `in`.jumboradar.activities
 
 import `in`.jumboradar.R
-import `in`.jumboradar.modules.LocationModule
-import `in`.jumboradar.utils.Constants
 import `in`.jumboradar.utils.Toasty
+import `in`.jumboradar.utils.Utils
 import android.content.Intent
-import android.content.pm.PackageManager
-import android.location.Location
-import android.location.LocationListener
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
-import com.google.android.gms.common.GoogleApiAvailability
-import com.google.android.gms.common.api.GoogleApi
-import kotlinx.android.synthetic.main.activity_home.*
+import android.support.v7.app.AppCompatActivity
+import android.view.View
+import com.afollestad.materialdialogs.MaterialDialog
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.LatLng
 
-class Home : AppCompatActivity(), LocationListener {
 
+class Home : AppCompatActivity(), OnMapReadyCallback {
+
+
+
+    private lateinit var mMap: GoogleMap
+    private lateinit var dialog:MaterialDialog.Builder
+    private val list=ArrayList<String>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
-        btnHistory.setOnClickListener { onHistoryClick() }
-        btnReport.setOnClickListener { onReportClick() }
+
+        val mapFragment = supportFragmentManager
+                .findFragmentById(R.id.map) as SupportMapFragment
+        mapFragment.getMapAsync(this)
 
     }
 
-    private fun onReportClick() {
 
-        if(LocationModule.isPermissionRequestNeeded()){
-            LocationModule.requestPermission(this,this)
-        }else{
-            LocationModule.requestForLocation(this,this)
-        }
-    }
 
     private fun onHistoryClick() {
         startActivity(Intent(Home@this,History::class.java))
     }
 
-
-
-
-    override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {
-
+     fun onReportSightClick(view: View){
+        startActivity(Intent(Home@this,Report::class.java))
     }
 
-    override fun onProviderEnabled(provider: String?) {
+     fun onSubscribeClick( view: View){
 
+        dialog= MaterialDialog.Builder(this)
+                .title("Select areas where you want to be alerted")
+                .items(R.array.subscribe_location_arrays)
+                .itemsCallbackMultiChoice(null, { dialog, which, text ->
+                    list.add(text.toString())
+                })
+                .positiveText("Subscribe")
+                .negativeText("Cancel")
+                .onPositive(MaterialDialog.SingleButtonCallback { dialog, which ->
+                    dialog.dismiss()
+                    Toasty.show(this,"Successfully subscribed")
+                })
+                .onNegative(MaterialDialog.SingleButtonCallback { dialog, which ->dialog.dismiss()  })
+        dialog.build().show()
     }
 
-    override fun onProviderDisabled(provider: String?) {
-
+    override fun onMapReady(googleMap: GoogleMap) {
+        mMap = googleMap
+        val gudalur = LatLng(11.50775, 76.4711862)
+        val gudalur1 = LatLng(11.4623, 76.483)
+        val gudalur2 = LatLng(11.5054, 76.3688)
+        val gudalur3 = LatLng(11.4434, 76.4747)
+        val gudalur4 = LatLng(11.5003, 76.2738)
+        val gudalur5 = LatLng(11.5135, 76.3038)
+        mMap.addMarker(Utils.getElephantMarker().position(gudalur))
+        mMap.addMarker(Utils.getElephantMarker().position(gudalur1))
+        mMap.addMarker(Utils.getElephantMarker().position(gudalur2))
+        mMap.addMarker(Utils.getElephantMarker().position(gudalur3))
+        mMap.addMarker(Utils.getElephantMarker().position(gudalur4))
+        mMap.addMarker(Utils.getElephantMarker().position(gudalur5))
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(LatLng(gudalur.latitude, gudalur.longitude), 10.0f))
     }
 
-    override fun onLocationChanged(location: Location?) {
-
-        Log.e("LOCATION", location!!.longitude.toString()+ " "+location!!.latitude.toString())
-    }
-
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        when (requestCode) {
-            Constants.REQUEST_ACCESS_FINE_LOCATION -> {
-                if (grantResults.size > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-                    LocationModule.requestForLocation(this,this)
-                } else {
-                  Toasty.show(this,"Cannot fetch location without permission")
-                }
-
-            }
-        }
-    }
 }
