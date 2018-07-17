@@ -39,6 +39,10 @@ class Home : AppCompatActivity(), OnMapReadyCallback {
         startActivity(Intent(Home@this,History::class.java))
     }
 
+    fun onPastIncidentsClick(view: View){
+        startActivity(Intent(Home@this,ListSightings::class.java))
+    }
+
      fun onReportSightClick(view: View){
         startActivity(Intent(Home@this,Report::class.java))
     }
